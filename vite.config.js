@@ -27,6 +27,9 @@ const precompress = () => ({
 export default defineConfig(({ command }) => ({
     // Saat build, aset disajikan lewat rute Laravel /_a/* (Cache-Control panjang + kompresi).
     ...(command === 'build' ? { base: '/_a/build/' } : {}),
+    ...(command === 'build'
+        ? { define: { 'process.env.NODE_ENV': JSON.stringify('production') } }
+        : {}),
     plugins: [
         laravel({ input: ['resources/css/app.css', 'resources/js/app.jsx'], refresh: true }),
         react(),
