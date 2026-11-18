@@ -1,11 +1,15 @@
-import { lazy, Suspense } from 'react';
+import Viewer from '@toast-ui/editor/dist/toastui-editor-viewer';
+import '@toast-ui/editor/dist/toastui-editor-viewer.css';
+import { useEffect, useRef } from 'react';
 
-const MarkdownViewerImpl = lazy(() => import('./MarkdownViewerImpl'));
-
+/** TOAST UI Viewer: merender Markdown menjadi HTML. */
 export default function MarkdownViewer({ content = '' }) {
-    return (
-        <Suspense fallback={<div className="py-4 text-sm text-slate-500" role="status">Memuat artikel...</div>}>
-            <MarkdownViewerImpl content={content} />
-        </Suspense>
-    );
+    const el = useRef(null);
+
+    useEffect(() => {
+        const viewer = new Viewer({ el: el.current, initialValue: content, usageStatistics: false });
+        return () => viewer.destroy();
+    }, [content]);
+
+    return <div ref={el} />;
 }
