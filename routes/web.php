@@ -8,7 +8,22 @@ use App\Features\Post\Controllers\PublicPostController;
 use App\Features\Profile\Controllers\ProfileController;
 use App\Http\Controllers\StaticAssetController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
 
+// ROUTE DARURAT: Bersihkan cache server production via web
+Route::get('/clear-system-cache-darurat', function () {
+    try {
+        Artisan::call('config:clear');
+        Artisan::call('cache:clear');
+        Artisan::call('view:clear');
+        Artisan::call('route:clear');
+        Artisan::call('optimize');
+        
+        return "SUKSES: Seluruh cache configuration, view, route, dan application berhasil dibersihkan dan di-optimize di server!";
+    } catch (\Exception $e) {
+        return "GAGAL: " . $e->getMessage();
+    }
+});
 // Aset statis ber-cache panjang (tanpa session/cookie).
 Route::get('/_a/{path}', StaticAssetController::class)->where('path', '.*')->withoutMiddleware('web')->name('static');
 
