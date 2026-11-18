@@ -121,7 +121,7 @@ pipeline {
                     fi
 
                     echo "=== Building Vite Assets ==="
-                    NODE_ENV=production npm run build
+                    npm run build
 
                     echo "=== Frontend Build Completed ==="
                 '''
