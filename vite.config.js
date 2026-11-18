@@ -16,7 +16,7 @@ const precompress = () => ({
                 const p = join(dir, f);
                 return statSync(p).isDirectory() ? walk(p) : [p];
             });
-        for (const file of walk('public/build').filter((f) => /\.(js|css|map|svg)$/.test(f))) {
+        for (const file of walk('public/build').filter((f) => /\.(js|css|svg)$/.test(f))) {
             const buf = readFileSync(file);
             writeFileSync(`${file}.gz`, gzipSync(buf, { level: 9 }));
             writeFileSync(`${file}.br`, brotliCompressSync(buf, { params: { [constants.BROTLI_PARAM_QUALITY]: 11 } }));
@@ -24,18 +24,26 @@ const precompress = () => ({
     },
 });
 
-export default defineConfig(({ command }) => ({
-    // Saat build, aset disajikan lewat rute Laravel /_a/* (Cache-Control panjang + kompresi).
-    ...(command === 'build' ? { base: '/_a/build/' } : {}),
-    ...(command === 'build'
-        ? { define: { 'process.env.NODE_ENV': JSON.stringify('production') } }
-        : {}),
-    plugins: [
-        laravel({ input: ['resources/css/app.css', 'resources/js/app.jsx'], refresh: true }),
-        react(),
-        tailwindcss(),
-        precompress(),
-    ],
-    build: { sourcemap: true },
-    server: { watch: { ignored: ['**/storage/framework/views/**'] } },
-}));
+export default defineConfig(({ command, mode }) => {
+    const isBuild = command === 'build';
+    if (isBuild) {
+        process.env.NODE_ENV = 'production';
+    }
+
+    return {
+        mode: isBuild ? 'production' : mode,
+        ...(isBuild ? { base: '/_a/build/' } : {}),
+        ...(isBuild
+            ? { define: { 'process.env.NODE_ENV': JSON.stringify('production') } }
+            : {}),
+        esbuild: isBuild ? { jsxDev: false } : {},
+        plugins: [
+            laravel({ input: ['resources/css/app.css', 'resources/js/app.jsx'], refresh: true }),
+            react(),
+            tailwindcss(),
+            precompress(),
+        ],
+        build: { sourcemap: true },
+        server: { watch: { ignored: ['**/storage/framework/views/**'] } },
+    };
+});
